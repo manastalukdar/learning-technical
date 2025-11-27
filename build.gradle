@@ -8,12 +8,16 @@ buildscript {
 }
 
 plugins {
+    id 'java'
+    id 'eclipse'
+    id 'application'
+    id 'jacoco'
     id "org.sonarqube" version "6.2.0.5505"
     //id "com.github.nbaztec.coveralls-jacoco" version "1.2.15"
     //id 'com.github.kt3k.coveralls' version '2.12.0'
 }
 
-repositories { 
+repositories {
     // https://stackoverflow.com/questions/36029754/force-gradle-to-use-http-instead-of-https
     // https://discuss.gradle.org/t/how-to-change-gradle-plugin-portal-from-https-to-http/10847/12
     mavenLocal()
@@ -26,12 +30,10 @@ ext.junitPlatformVersion = '1.5.2'
 ext.junitJupiterVersion  = '5.13.4'
 ext.log4jVersion         = '2.25.1'
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'application'
-
-// https://stackoverflow.com/questions/46233314/gradle-android-jacoco-and-junit5
-apply plugin: 'jacoco'
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
 jacoco {
     toolVersion = '0.8.13'
 }
@@ -44,9 +46,6 @@ jacocoTestCoverageVerification {
         }
     }
 }
-
-sourceCompatibility = JavaVersion.VERSION_19
-targetCompatibility = JavaVersion.VERSION_19
 
 compileJava {
     options.compilerArgs += ["--enable-preview"]
@@ -90,8 +89,8 @@ dependencies {
 
     // Enable use of the JUnitPlatform Runner within the IDE
 	//testCompile("org.junit.platform:junit-platform-runner:${junitPlatformVersion}")
-    // Only needed to run tests in an (IntelliJ) IDE(A) that bundles an older version
-	//testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
+    // Required for Gradle 9.x to run JUnit Platform tests
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
     
 	// To avoid compiler warnings about @API annotations in JUnit code
 	testCompileOnly('org.apiguardian:apiguardian-api:1.1.2')
@@ -105,7 +104,9 @@ dependencies {
     implementation "junit:junit:${junit4Version}"
 }
 
-mainClassName = ' '
+application {
+    mainClass.set(' ')
+}
 
 /*
 Default:
@@ -139,10 +140,10 @@ afterEvaluate {
         //files(sourceSets.main.output)
 
         reports {
-            xml.required = true
-            xml.destination file("${buildDir}/reports/jacoco/report.xml")
-            html.required = true
-            html.destination file("${buildDir}/reports/jacoco/html")
+            xml.required.set(true)
+            xml.outputLocation.set(file("${buildDir}/reports/jacoco/report.xml"))
+            html.required.set(true)
+            html.outputLocation.set(file("${buildDir}/reports/jacoco/html"))
         }
     }
 
